@@ -5,31 +5,42 @@
 
 #include <string>
 
-struct WindowSpec
+struct WindowInfo
 {
-    int32_t width = 800, height = 600;
-    bool resizable = true, fullscreen = false;
-    std::string title;
+	bool fullscreen = false;
+	int width, height, xpos, ypos;
+	std::string title;
 };
 
 class Window
 {
 public:
-    Window(WindowSpec& spec);
-    ~Window();
+	Window(WindowInfo& info);
+	~Window();
 
-    void Show();
-    bool IsOpen();
-    void Clear();
-    void Update();
+	void Show();
+	bool IsOpen();
+	void Clear();
+	void SetClearColor(float red, float green, float blue);
+	void Update();
+	void Close();
+	void ToggleFullscreenMode(int width, int height);
 
-    void Close();
+	inline const WindowInfo& GetWindowInfo() { return m_Info; }
+	inline std::string GetTitle() { return m_Title; }
+	inline GLFWwindow* GetHandle() { return m_Handle; }
 
-    inline const WindowSpec& GetSpec() const { return m_Spec; }
-    inline GLFWwindow* GetHandle() const { return m_Handle; }
+	inline void SetTitle(std::string title) { glfwSetWindowTitle(m_Handle, title.c_str()); }
 private:
-    WindowSpec m_Spec{};
-    GLFWwindow* m_Handle = nullptr;
+	GLFWwindow* m_Handle;
+	std::string m_Title;
+	WindowInfo m_Info{};
 
-    static void SizeCallback(GLFWwindow* window, int w, int h);
+private:
+	void ToFullscreenMode();
+	void ToWindowedMode(int w, int h);
+
+private:
+	static void FramebuffSizeCallback(GLFWwindow* window, int width, int height);
+	static void WindowPosCallback(GLFWwindow* window, int xpos, int ypos);
 };

@@ -1,14 +1,22 @@
 #include "Application.h"
 
+#include "Window/Input.h"
+
 Application::Application()
 {
     // Window
     {
-        WindowSpec spec{};
-        spec.title = "GLRenderer";
-        spec.fullscreen = true;
+        WindowInfo info{};
+        info.width = 800;
+        info.height = 600;
+        info.title = "GLRenderer";
 
-        m_Window = std::make_shared<Window>(spec);
+        m_Window = std::make_shared<Window>(info);
+    }
+
+    // Renderer
+    {
+        m_Renderer = std::make_shared<Renderer>(m_Window);
     }
 }
 
@@ -37,8 +45,9 @@ void Application::Render()
 
 void Application::Update()
 {
+    m_Renderer->Update();
     m_Window->Update();
 
-    if(glfwGetKey(m_Window->GetHandle(), GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    if(Input::IsKeyPressed(*m_Window, GLFW_KEY_ESCAPE))
         m_Window->Close();
 }
