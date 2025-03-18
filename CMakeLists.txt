@@ -27,13 +27,14 @@ add_subdirectory(libs/imgui)
 add_subdirectory(libs/glfw)
 add_subdirectory(libs/glad)
 add_subdirectory(libs/stb)
+add_subdirectory(libs/tinyobj)
 
 find_package(OpenGL REQUIRED)
 
 add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 add_executable(${PROJECT_NAME} ${SRCS})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE imgui glfw stb glad OpenGL::GL)
+target_link_libraries(${PROJECT_NAME} PRIVATE imgui glfw stb glad OpenGL::GL tinyobj)
 
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/libs/glm")
