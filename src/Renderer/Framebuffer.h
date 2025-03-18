@@ -13,9 +13,10 @@ public:
     void Bind();
     void Unbind();
 
-    inline Texture GetTexture() const { return m_Texture; }
+    inline Texture GetColorAttachment() const { return m_ColAttach; }
+    inline Texture GetDepthAttachment() const { return m_DepthAttach; }
     inline uint32_t GetHandle() const { return m_Handle; }
 private:
     uint32_t m_Handle = 0;
-    Texture m_Texture;
+    Texture m_ColAttach, m_DepthAttach;
 };

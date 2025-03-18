@@ -2,6 +2,7 @@
 
 #include "Camera.h"
 #include "Shader.h"
+#include "Framebuffer.h"
 
 #include "Window/Window.h"
 
@@ -19,4 +20,5 @@ public:
 private:
     std::shared_ptr<Window> m_Window;
     float m_Delta, m_LastTime;
+    Framebuffer m_Fb;
 };

@@ -26,7 +26,6 @@ Application::~Application()
 
 void Application::Run()
 {
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     m_Window->Show();
     while(m_Window->IsOpen())
     {
@@ -40,7 +39,7 @@ void Application::Run()
 
 void Application::Render()
 {
-
+    m_Renderer->Render();
 }
 
 void Application::Update()
