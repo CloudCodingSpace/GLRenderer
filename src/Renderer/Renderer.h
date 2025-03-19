@@ -25,4 +25,5 @@ private:
     Camera m_Camera;
     Shader m_Shader;
     Mesh m_Mesh;
+    Texture m_Texture;
 };

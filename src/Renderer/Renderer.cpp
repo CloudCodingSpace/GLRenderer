@@ -4,15 +4,18 @@
 
 #include <imgui/imgui.h>
 
+#include <stb/stb_image.h>
+#include <iostream>
+
 Renderer::Renderer(std::shared_ptr<Window> window)
 {
     m_Window = window;
 
     {
         std::vector<Vertex> vertices = {
-            {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-            {{ 0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-            {{ 0.0f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}}
+            {{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f}},
+            {{ 0.5f, -0.5f, 0.0f}, {1.0f, 0.0f}},
+            {{ 0.0f,  0.5f, 0.0f}, {0.5f, 1.0f}}
         };
 
         std::vector<uint32_t> indices = {
@@ -20,6 +23,21 @@ Renderer::Renderer(std::shared_ptr<Window> window)
         };
 
         m_Mesh.Init(vertices, indices);
+    }
+
+    {
+        stbi_set_flip_vertically_on_load(true);
+        int width, height, channels;
+        auto* data = stbi_load("assets/textures/dirt.jpg", &width, &height, &channels, 4);
+        if(data)
+        {
+            m_Texture.Init(width, height, data);
+        }
+        else 
+        {
+            std::cout << "Failed to read the texxture file. Reason from stbi :- " << stbi_failure_reason() << std::endl;
+            std::exit(-1);
+        }
     }
 
     m_Shader.Init("assets/shaders/default.glsl");
@@ -33,6 +51,7 @@ Renderer::~Renderer()
 {
     GuiHelper::Shutdown();
 
+    m_Texture.Destroy();
     m_Mesh.Destroy();
     m_Shader.Destroy();
     m_Fb.Destroy();
@@ -58,7 +77,10 @@ void Renderer::Render()
         m_Shader.PutMat4("proj", m_Camera.GetProjMat());
         m_Shader.PutMat4("view", m_Camera.GetViewMat());
         m_Shader.PutMat4("model", glm::mat4(1.0f));
+        m_Shader.PutTex("tex", 0);
 
+        m_Texture.Active(1);
+        m_Texture.Bind();
         m_Mesh.Render();
     }
     
