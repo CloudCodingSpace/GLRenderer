@@ -2,20 +2,17 @@
 #version 330 core
 
 layout (location = 0) in vec3 pos;
-layout (location = 1) in vec2 texcoords;
-layout (location = 2) in vec3 normal;
+layout (location = 1) in vec3 color;
 
 uniform mat4 proj;
 uniform mat4 model;
 uniform mat4 view;
 
-out vec2 texCoords;
-out vec3 Normal;
+out vec3 oColor;
 
 void main() {
 	gl_Position = proj * view * model * vec4(pos, 1.0);
-	texCoords = texcoords;
-	Normal = normal;
+	oColor = color;
 }
 
 @type fragment
@@ -23,12 +20,12 @@ void main() {
 
 out vec4 FragColor;
 
-in vec2 texCoords;
-in vec3 Normal;
+in vec3 oColor;
 
 uniform sampler2D tex;
 
 void main() {
-	FragColor = texture(tex, texCoords);
-	FragColor.rgb = pow(FragColor.rgb, vec3(1.0/2.2));
+	FragColor = vec4(oColor, 1.0);
+
+	FragColor.rgb = pow(FragColor.rgb, vec3(1.0/2.0)); // Gamma correction (To sRGB space)
 }

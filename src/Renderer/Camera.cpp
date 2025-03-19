@@ -9,9 +9,9 @@ void Camera::Update(Window& m_Window, float aspectRatio, float deltaTime, float 
     if(Input::IsKeyPressed(m_Window, GLFW_KEY_S))
         m_CamPos -= m_CamFront * deltaTime * 2.0f;
     if(Input::IsKeyPressed(m_Window, GLFW_KEY_A))
-        m_CamPos -= m_CamRight * deltaTime * 2.0f;
-    if(Input::IsKeyPressed(m_Window, GLFW_KEY_D))
         m_CamPos += m_CamRight * deltaTime * 2.0f;
+    if(Input::IsKeyPressed(m_Window, GLFW_KEY_D))
+        m_CamPos -= m_CamRight * deltaTime * 2.0f;
     if(Input::IsKeyPressed(m_Window, GLFW_KEY_SPACE))
         m_CamPos += GetWorldUp() * deltaTime * 2.0f;
     if(Input::IsKeyPressed(m_Window, GLFW_KEY_LEFT_SHIFT))
@@ -20,7 +20,7 @@ void Camera::Update(Window& m_Window, float aspectRatio, float deltaTime, float 
     if(Input::IsMBPressed(m_Window, GLFW_MOUSE_BUTTON_RIGHT))
     {
         double mouseX, mouseY;
-        Input::HideMouse(m_Window);
+        glfwGetCursorPos(m_Window.GetHandle(), &mouseX, &mouseY);
 
         if (firstMouse) {
             glfwSetInputMode(m_Window.GetHandle(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -29,7 +29,7 @@ void Camera::Update(Window& m_Window, float aspectRatio, float deltaTime, float 
             firstMouse = false;
         }
 
-        float offsetX = (lastMouseX - mouseX) * m_Sensitivity;
+        float offsetX = (mouseX - lastMouseX) * m_Sensitivity;
         float offsetY = (lastMouseY - mouseY) * m_Sensitivity;
 
         lastMouseX = mouseX;
