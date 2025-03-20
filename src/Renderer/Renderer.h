@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Camera.h"
-#include "Mesh.h"
+#include "Model.h"
 #include "Shader.h"
 #include "Framebuffer.h"
 
@@ -24,6 +24,5 @@ private:
     Framebuffer m_Fb;
     Camera m_Camera;
     Shader m_Shader;
-    Mesh m_Mesh;
-    Texture m_Texture;
+    Model m_Model;
 };

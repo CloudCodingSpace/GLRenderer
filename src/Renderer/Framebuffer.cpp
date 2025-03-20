@@ -10,10 +10,10 @@ void Framebuffer::Init(int32_t width, int32_t height)
     glBindFramebuffer(GL_FRAMEBUFFER, m_Handle);
 
     m_ColAttach.Init(width, height);
-    m_DepthAttach.Init(width, height);
+    m_DepthAttach.Init(width, height, nullptr, true);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_ColAttach.GetHandle(), 0);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH24_STENCIL8, GL_TEXTURE_2D, m_DepthAttach.GetHandle(), 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, m_DepthAttach.GetHandle(), 0);
 
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {

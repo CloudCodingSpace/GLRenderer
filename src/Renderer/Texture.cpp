@@ -2,11 +2,13 @@
 
 #include <glad/glad.h>
 
-void Texture::Init(int32_t width, int32_t height, void* pixels, bool isFloat)
+void Texture::Init(int32_t width, int32_t height, void* pixels, bool isDepth, bool isFloat)
 {
     m_Width = width;
     m_Height = height;
     m_Pixels = pixels;
+    m_IsDepth = isDepth;
+    m_IsFloat = isFloat;
 
     glGenTextures(1, &m_Handle);
     glBindTexture(GL_TEXTURE_2D, m_Handle);
@@ -16,7 +18,18 @@ void Texture::Init(int32_t width, int32_t height, void* pixels, bool isFloat)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, (isFloat) ? GL_RGBA32F : GL_RGBA, width, height, 0, GL_RGBA, (isFloat) ? GL_FLOAT : GL_UNSIGNED_BYTE, pixels);
+    if (isDepth)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
+    }
+    else if (isFloat)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_FLOAT, pixels);
+    }
+    else
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    }
 
     glGenerateMipmap(GL_TEXTURE_2D);
     
@@ -40,7 +53,11 @@ void Texture::Resize(int32_t width, int32_t height)
 
     Bind();
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_Pixels);
+    GLenum format = m_IsFloat ? GL_RGBA32F : (m_IsDepth ? GL_DEPTH24_STENCIL8 : GL_RGBA);
+    GLenum pixelFormat = m_IsDepth ? GL_DEPTH_STENCIL : GL_RGBA;
+    GLenum type = m_IsDepth ? GL_UNSIGNED_INT_24_8 : (m_IsFloat ? GL_FLOAT : GL_UNSIGNED_BYTE);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, format, m_Width, m_Height, 0, pixelFormat, type, m_Pixels);
     glGenerateMipmap(GL_TEXTURE_2D);
     
     Unbind();
@@ -67,7 +84,13 @@ void Texture::GetPixels(unsigned char* pixels)
         return;
 
     Bind();
-    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+    GLenum format = m_IsFloat ? GL_RGBA32F : (m_IsDepth ? GL_DEPTH24_STENCIL8 : GL_RGBA);
+    GLenum pixelFormat = m_IsDepth ? GL_DEPTH_STENCIL : GL_RGBA;
+    GLenum type = m_IsDepth ? GL_UNSIGNED_INT_24_8 : (m_IsFloat ? GL_FLOAT : GL_UNSIGNED_BYTE);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, format, m_Width, m_Height, 0, pixelFormat, type, pixels);
+
     Unbind();
 }
 
@@ -80,7 +103,7 @@ void Texture::SetPixels(unsigned char* pixels)
     
     Bind();
     
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_Pixels);
+    glTexImage2D(GL_TEXTURE_2D, 0, (m_IsFloat) ? GL_RGBA32F : ((m_IsDepth) ? GL_DEPTH24_STENCIL8 : GL_RGBA), m_Width, m_Height, 0, GL_RGBA, (m_IsFloat) ? GL_FLOAT : ((m_IsDepth) ? GL_DEPTH_STENCIL : GL_UNSIGNED_BYTE), m_Pixels);
 
     Unbind();
 }

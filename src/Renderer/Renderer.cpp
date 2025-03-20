@@ -11,34 +11,7 @@ Renderer::Renderer(std::shared_ptr<Window> window)
 {
     m_Window = window;
 
-    {
-        std::vector<Vertex> vertices = {
-            {{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f}},
-            {{ 0.5f, -0.5f, 0.0f}, {1.0f, 0.0f}},
-            {{ 0.0f,  0.5f, 0.0f}, {0.5f, 1.0f}}
-        };
-
-        std::vector<uint32_t> indices = {
-            0, 1, 2
-        };
-
-        m_Mesh.Init(vertices, indices);
-    }
-
-    {
-        stbi_set_flip_vertically_on_load(true);
-        int width, height, channels;
-        auto* data = stbi_load("assets/textures/dirt.jpg", &width, &height, &channels, 4);
-        if(data)
-        {
-            m_Texture.Init(width, height, data);
-        }
-        else 
-        {
-            std::cout << "Failed to read the texxture file. Reason from stbi :- " << stbi_failure_reason() << std::endl;
-            std::exit(-1);
-        }
-    }
+    m_Model.Init("assets/meshes/lion_head/lion_head_1k.gltf");
 
     m_Shader.Init("assets/shaders/default.glsl");
 
@@ -51,8 +24,7 @@ Renderer::~Renderer()
 {
     GuiHelper::Shutdown();
 
-    m_Texture.Destroy();
-    m_Mesh.Destroy();
+    m_Model.Destroy();
     m_Shader.Destroy();
     m_Fb.Destroy();
 }
@@ -79,9 +51,7 @@ void Renderer::Render()
         m_Shader.PutMat4("model", glm::mat4(1.0f));
         m_Shader.PutTex("tex", 0);
 
-        m_Texture.Active(1);
-        m_Texture.Bind();
-        m_Mesh.Render();
+        m_Model.Render();
     }
     
     m_Fb.Unbind();
