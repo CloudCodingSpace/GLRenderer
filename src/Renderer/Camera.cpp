@@ -56,6 +56,6 @@ void Camera::Update(Window& m_Window, float aspectRatio, float deltaTime, float 
     m_CamRight = glm::normalize(glm::cross(GetWorldUp(), m_CamFront));
     m_CamUp = glm::normalize(glm::cross(m_CamFront, m_CamRight));
 
-    m_Proj = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 1000.0f);
+    m_Proj = glm::perspective(glm::radians(fov), aspectRatio, 0.01f, 1000.0f);
     m_View = glm::lookAt(m_CamPos, m_CamPos + m_CamFront, GetWorldUp());
 }

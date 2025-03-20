@@ -41,7 +41,9 @@ void Renderer::Render()
     
     // Main Rendering
     {
+        glEnable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
+        glCullFace(GL_BACK);
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
