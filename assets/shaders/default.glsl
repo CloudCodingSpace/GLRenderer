@@ -29,5 +29,8 @@ in vec3 oNormal;
 uniform sampler2D tex;
 
 void main() {
-	FragColor = texture(tex, oTexCoord);
+	vec3 lightDir = vec3(-1.0);
+	float diffuseFactor = max(dot(oNormal, -lightDir), 0.0);
+
+	FragColor = texture(tex, oTexCoord) * diffuseFactor;
 }
