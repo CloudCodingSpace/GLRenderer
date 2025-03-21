@@ -83,5 +83,6 @@ void Renderer::Update()
     m_Delta = crntTime - m_LastTime;
     m_LastTime = crntTime;
 
-    m_Camera.Update(*m_Window, (float)m_Window->GetWindowInfo().width/(float)m_Window->GetWindowInfo().height, m_Delta);
+    if(m_Window->GetWindowInfo().width > 0 && m_Window->GetWindowInfo().height > 0)
+        m_Camera.Update(*m_Window, (float)m_Window->GetWindowInfo().width/(float)m_Window->GetWindowInfo().height, m_Delta);
 }
