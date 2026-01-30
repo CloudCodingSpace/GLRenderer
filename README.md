@@ -12,3 +12,4 @@ Basic OpenGL object classes like Framebuffer, Texture, GuiHelper (For integratin
  - Framebuffer
  - GuiHelper (For ImGui with GLFW & OpenGL integration, Dockspace included)
  - Shader
+ - Skybox (Just needs the path to the hdr panorama image, and it renders a skybox from it!)
