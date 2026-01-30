@@ -26,7 +26,7 @@ Renderer::~Renderer()
 {
     GuiHelper::Shutdown();
 
-    m_Shader.Destroy();
+    m_Skybox.Destroy();
     m_Model.Destroy();
     m_Shader.Destroy();
     m_Fb.Destroy();
