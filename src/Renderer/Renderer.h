@@ -4,6 +4,7 @@
 #include "Model.h"
 #include "Shader.h"
 #include "Framebuffer.h"
+#include "Skybox.h"
 
 #include "Window/Window.h"
 
@@ -25,4 +26,5 @@ private:
     Camera m_Camera;
     Shader m_Shader;
     Model m_Model;
+    Skybox m_Skybox;
 };

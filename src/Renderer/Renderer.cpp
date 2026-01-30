@@ -17,6 +17,8 @@ Renderer::Renderer(std::shared_ptr<Window> window)
 
     m_Fb.Init(m_Window->GetWindowInfo().width, m_Window->GetWindowInfo().height);
 
+    m_Skybox.Init("assets/skybox/1.hdr");
+
     GuiHelper::Init(*m_Window);
 }
 
@@ -24,6 +26,7 @@ Renderer::~Renderer()
 {
     GuiHelper::Shutdown();
 
+    m_Shader.Destroy();
     m_Model.Destroy();
     m_Shader.Destroy();
     m_Fb.Destroy();
@@ -54,6 +57,8 @@ void Renderer::Render()
         m_Shader.PutTex("tex", 0);
 
         m_Model.Render();
+
+        m_Skybox.Render(m_Camera);
     }
     
     m_Fb.Unbind();
