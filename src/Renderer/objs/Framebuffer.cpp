@@ -2,7 +2,7 @@
 
 #include <glad/glad.h>
 
-#include "Utils/Logger.h"
+#include "Utils.h"
 
 void Framebuffer::Init(int32_t width, int32_t height)
 {
@@ -18,7 +18,6 @@ void Framebuffer::Init(int32_t width, int32_t height)
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
         FATAL("Failed to create the framebuffer. Status :- " + std::to_string(glCheckFramebufferStatus(GL_FRAMEBUFFER)));
-        std::exit(-1);
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

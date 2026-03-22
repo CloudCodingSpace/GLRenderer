@@ -1,6 +1,6 @@
 #include "Model.h"
 
-#include "Utils/Logger.h"
+#include "Utils.h"
 
 #include <stb/stb_image.h>
 
@@ -13,7 +13,6 @@ void Model::Init(std::string path)
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
         FATAL("Failed to load model. Reason by assimp :- " + std::string(importer.GetErrorString()));
-        std::exit(-1);
     }
 
     m_Dir = path.substr(0, path.find_last_of('/'));
@@ -117,7 +116,6 @@ std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureType 
         if(!data)
         {
             FATAL("Failed to load model texture. Reason by stb image :- " + std::string(stbi_failure_reason()))
-            std::exit(-1);
         }
 
         Texture texture;

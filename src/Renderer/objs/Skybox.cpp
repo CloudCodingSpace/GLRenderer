@@ -5,7 +5,7 @@
 
 #include <glad/glad.h>
 
-#include "Utils/Logger.h"
+#include "Utils.h"
 
 #include "Texture.h"
 

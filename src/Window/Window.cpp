@@ -1,8 +1,7 @@
 #include "Window.h"
 #include "Input.h"
 
-#include <Utils/Logger.h>
-#include <Utils/Utils.h>
+#include "Utils.h"
 
 #include <thread>
 #include <cassert>

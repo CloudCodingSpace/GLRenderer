@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Camera.h"
-#include "Model.h"
-#include "Shader.h"
-#include "Framebuffer.h"
-#include "Skybox.h"
+#include "objs/Camera.h"
+#include "objs/Model.h"
+#include "objs/Shader.h"
+#include "objs/Framebuffer.h"
+#include "objs/Skybox.h"
 
 #include "Window/Window.h"
 

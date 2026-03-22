@@ -4,8 +4,7 @@
 #include <iostream>
 #include <map>
 
-#include <Utils/Utils.h>
-#include <Utils/Logger.h>
+#include "Utils.h"
 
 #include <glad/glad.h>
 
@@ -25,7 +24,7 @@ void Shader::Init(std::string path)
     if(!success)
     {
         glGetShaderInfoLog(m_vID, 1024, 0, log);
-        ERROR((const char*)log)
+        ERROR(std::string(log))
     }
     
     m_fID = glCreateShader(GL_FRAGMENT_SHADER);
@@ -35,9 +34,9 @@ void Shader::Init(std::string path)
     if(!success)
     {
         glGetShaderInfoLog(m_fID, 1024, 0, log);
-        ERROR((const char*)log)
+        ERROR(std::string(log))
     }
-
+    
     m_pID = glCreateProgram();
     glAttachShader(m_pID, m_vID);
     glAttachShader(m_pID, m_fID);
@@ -47,13 +46,13 @@ void Shader::Init(std::string path)
     if(!success)
     {
         glGetProgramInfoLog(m_pID, 1024, 0, log);
-        ERROR((const char*)log)
+        ERROR(std::string(log))
     }
     glGetProgramiv(m_pID, GL_VALIDATE_STATUS, &success);
     if(!success)
     {
         glGetProgramInfoLog(m_pID, 1024, 0, log);
-        ERROR((const char*)log)
+        ERROR(std::string(log))
     }
 
     glDeleteShader(m_vID);

@@ -6,8 +6,22 @@
 #include <glad/glad.h>
 #include <iostream>
 
+#include <slog/slog.h>
+
 namespace Utils
 {
+    static SLogger* logger = nullptr;
+    
+    static inline void SetLogger(SLogger* logger) 
+    {
+        Utils::logger = logger;
+    }
+
+    static inline SLogger* GetLogger() 
+    {
+        return logger;
+    }
+
     static inline std::string toLowerCase(std::string str)
     {
         std::string lowerStr = str;
@@ -23,8 +37,6 @@ namespace Utils
                             const char *message, 
                             const void *userParam)
     {
-        //return; // For now!
-        
         // ignore non-significant error/warning codes
         if(id == 131169 || id == 131185 || id == 131218 || id == 131204) return; 
 
@@ -64,3 +76,14 @@ namespace Utils
         std::cout << std::endl;
     }
 }
+
+#define INFO(msg, ...) do { slogLogMsg(Utils::GetLogger(), SLOG_SEVERITY_INFO, std::string(msg).c_str(), ##__VA_ARGS__); } while(0);
+#define WARN(msg, ...) do { slogLogMsg(Utils::GetLogger(), SLOG_SEVERITY_WARN std::string(msg).c_str(), ##__VA_ARGS__); } while(0);
+#define ERROR(msg, ...) do { slogLogMsg(Utils::GetLogger(), SLOG_SEVERITY_ERROR, std::string(msg).c_str(), ##__VA_ARGS__); } while(0);
+#define FATAL(msg, ...) do { slogLogMsg(Utils::GetLogger(), SLOG_SEVERITY_FATAL, std::string(msg).c_str(), ##__VA_ARGS__); abort(); } while(0);
+
+#ifdef _DEBUG
+    #define DEBUG(msg, ...) do { slogLogMsg(Utils::GetLogger(), SLOG_SEVERITY_DEBUG, (msg).c_str(), ##__VA_ARGS__); } while(0);
+#else
+    #define DEBUG(msg, ...) ;
+#endif

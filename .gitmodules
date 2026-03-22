@@ -7,3 +7,6 @@
 [submodule "assimp"]
 	path = libs/assimp
 	url = https://github.com/assimp/assimp
+[submodule "slog"]
+	path = libs/slog
+	url = https://github.com/CloudCodingSpace/slog
