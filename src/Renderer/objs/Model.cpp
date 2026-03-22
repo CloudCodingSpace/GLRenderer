@@ -4,11 +4,20 @@
 
 #include <stb/stb_image.h>
 
+static glm::mat4 ConvertMatrix(const aiMatrix4x4& m)
+{
+    return glm::mat4(
+        m.a1, m.b1, m.c1, m.d1,
+        m.a2, m.b2, m.c2, m.d2,
+        m.a3, m.b3, m.c3, m.d3,
+        m.a4, m.b4, m.c4, m.d4
+    );
+}
+
 void Model::Init(std::string path)
 {
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_OptimizeMeshes | aiProcess_JoinIdenticalVertices | 
-                                                     aiProcess_GenNormals | aiProcess_SplitLargeMeshes);
+    const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
@@ -28,31 +37,35 @@ void Model::Destroy()
         tex.Destroy();
 }
 
-void Model::Render()
+void Model::Render(std::string attributeName, Shader& shader)
 {
-    for (auto& mesh : m_Meshes)
-        mesh.Render();
+    for (auto& mesh : m_Meshes) {
+        shader.PutMat4(attributeName, mesh.GetTransform());
+        mesh.Render(m_Textures);
+    }
 }
 
-void Model::ProcessNode(aiNode* node, const aiScene* scene)
+void Model::ProcessNode(aiNode* node, const aiScene* scene, glm::mat4 transform)
 {
+    glm::mat4 nodeTransform = transform * ConvertMatrix(node->mTransformation);
+
     for (uint32_t i = 0; i < node->mNumMeshes; i++)
     {
         aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-        m_Meshes.push_back(ProcessMesh(mesh, scene));
+        m_Meshes.push_back(ProcessMesh(mesh, scene, nodeTransform));
     }
 
     for (uint32_t i = 0; i < node->mNumChildren; i++)
     {
-        ProcessNode(node->mChildren[i], scene);
+        ProcessNode(node->mChildren[i], scene, nodeTransform);
     }
 }
 
-Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
+Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene, glm::mat4 transform)
 {
     std::vector<Vertex> vertices;
     std::vector<uint32_t> indices;
-    Texture* diffuseTexture = nullptr;
+    uint32_t diffuseTexture = -1;
 
     for (uint32_t i = 0; i < mesh->mNumVertices; i++)
     {
@@ -90,12 +103,12 @@ Mesh Model::ProcessMesh(aiMesh* mesh, const aiScene* scene)
         if (!textures.empty())
         {
             m_Textures.push_back(textures[0]);
-            diffuseTexture = &m_Textures.back();
+            diffuseTexture = m_Textures.size() - 1;
         }
     }
 
     Mesh newMesh;
-    newMesh.Init(vertices, indices, diffuseTexture);
+    newMesh.Init(vertices, indices, diffuseTexture, std::move(transform));
     return newMesh;
 }
 
