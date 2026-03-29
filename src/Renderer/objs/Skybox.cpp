@@ -1,185 +1,210 @@
-#include "Skybox.h"
+#include "Shader.h"
 
-#include <glm/glm.hpp>
-#include <stb/stb_image.h>
-
-#include <glad/glad.h>
+#include <fstream>
+#include <iostream>
+#include <map>
 
 #include "Utils.h"
 
-#include "Texture.h"
+#include <glad/glad.h>
 
-void Skybox::Init(const char* path) 
+void Shader::Init(std::string path)
 {
-    m_Shader.Init("assets/shaders/skybox.glsl");
+    ReadFile(path);
+    const char* vs = vSrc.c_str();
+    const char* fs = fSrc.c_str();
 
-    Texture envMap;
-    Shader convert;
+    char log[1024];
+    int success = 0;
 
-    // Env map
+    m_vID = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(m_vID, 1, &vs, 0);
+    glCompileShader(m_vID);
+    glGetShaderiv(m_vID, GL_COMPILE_STATUS, &success);
+    if(!success)
     {
-        int w, h, channels;
-        stbi_set_flip_vertically_on_load(true);
-        float* data = stbi_loadf(path, &w, &h, &channels, 4);
-        if(data == nullptr)
-        {
-            FATAL("Failed to read hdri file! Reasons :- " + std::string(stbi_failure_reason()));
-            std::exit(-1);
-        }
-
-        envMap.Init(w, h, data, false, true);
+        glGetShaderInfoLog(m_vID, 1024, 0, log);
+        ERROR(std::string(log))
     }
-
-    // Cubemap
-    {
-        glGenTextures(1, &m_TexId);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, m_TexId);
-        for(int i = 0; i < 6; i++) {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, GL_RGB16F, 512, 512, 0, GL_RGBA, GL_FLOAT, nullptr);
-        }
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    }
-
-    uint32_t fbo, rbo;
-    {
-        glGenFramebuffers(1, &fbo);
-        glGenRenderbuffers(1, &rbo);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-        glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
-    }
-
-    // Cube 
-    {
-        float cubeVertices[] = {
-            -1.0f,  1.0f, -1.0f,
-            -1.0f, -1.0f, -1.0f,
-             1.0f, -1.0f, -1.0f,
-             1.0f, -1.0f, -1.0f,
-             1.0f,  1.0f, -1.0f,
-            -1.0f,  1.0f, -1.0f,
-
-            -1.0f, -1.0f,  1.0f,
-            -1.0f,  1.0f,  1.0f,
-             1.0f,  1.0f,  1.0f,
-             1.0f,  1.0f,  1.0f,
-             1.0f, -1.0f,  1.0f,
-            -1.0f, -1.0f,  1.0f,
-
-            -1.0f,  1.0f,  1.0f,
-            -1.0f, -1.0f,  1.0f,
-            -1.0f, -1.0f, -1.0f,
-            -1.0f, -1.0f, -1.0f,
-            -1.0f,  1.0f, -1.0f,
-            -1.0f,  1.0f,  1.0f,
-
-             1.0f,  1.0f,  1.0f,
-             1.0f,  1.0f, -1.0f,
-             1.0f, -1.0f, -1.0f,
-             1.0f, -1.0f, -1.0f,
-             1.0f, -1.0f,  1.0f,
-             1.0f,  1.0f,  1.0f,
-
-            -1.0f, -1.0f, -1.0f,
-             1.0f, -1.0f, -1.0f,
-             1.0f, -1.0f,  1.0f,
-             1.0f, -1.0f,  1.0f,
-            -1.0f, -1.0f,  1.0f,
-            -1.0f, -1.0f, -1.0f,
-
-            -1.0f,  1.0f, -1.0f,
-            -1.0f,  1.0f,  1.0f,
-             1.0f,  1.0f,  1.0f,
-             1.0f,  1.0f,  1.0f,
-             1.0f,  1.0f, -1.0f,
-            -1.0f,  1.0f, -1.0f
-        };
-
-        glGenVertexArrays(1, &m_Vao);
-        glGenBuffers(1, &m_Vbo);
-
-        glBindVertexArray(m_Vao);
-        glBindBuffer(GL_ARRAY_BUFFER, m_Vbo);
-
-        glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-        glBindVertexArray(0);
-    }
-
-    convert.Init("assets/shaders/skyboxConvert.glsl");
     
-    glm::mat4 captureViews[] = {
-        glm::lookAt(glm::vec3(0,0,0), glm::vec3( 1, 0, 0), glm::vec3(0,-1,0)),
-        glm::lookAt(glm::vec3(0,0,0), glm::vec3(-1, 0, 0), glm::vec3(0,-1,0)),
-        glm::lookAt(glm::vec3(0,0,0), glm::vec3(0, 1, 0), glm::vec3(0, 0, 1)),
-        glm::lookAt(glm::vec3(0,0,0), glm::vec3(0,-1, 0), glm::vec3(0, 0,-1)),
-        glm::lookAt(glm::vec3(0,0,0), glm::vec3(0, 0, 1), glm::vec3(0,-1,0)),
-        glm::lookAt(glm::vec3(0,0,0), glm::vec3(0, 0,-1), glm::vec3(0,-1,0))
-    };
-
-    glm::mat4 proj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-    convert.Bind();
-    convert.PutMat4("proj", proj);
-    convert.PutTex("tex", 0);
-
-    envMap.Active(1);
-    envMap.Bind();
-
-    glEnable(GL_DEPTH_TEST);
-    glViewport(0, 0, 512, 512);
-    for(int i = 0; i < 6; i++)
+    m_fID = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(m_fID, 1, &fs, 0);
+    glCompileShader(m_fID);
+    glGetShaderiv(m_fID, GL_COMPILE_STATUS, &success);
+    if(!success)
     {
-        convert.PutMat4("view", captureViews[i]);
-
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, m_TexId, 0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-        glBindVertexArray(m_Vao);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glGetShaderInfoLog(m_fID, 1024, 0, log);
+        ERROR(std::string(log))
     }
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    
+    m_pID = glCreateProgram();
+    glAttachShader(m_pID, m_vID);
+    glAttachShader(m_pID, m_fID);
+    glLinkProgram(m_pID);
+    glValidateProgram(m_pID);
+    glGetProgramiv(m_pID, GL_LINK_STATUS, &success);
+    if(!success)
+    {
+        glGetProgramInfoLog(m_pID, 1024, 0, log);
+        ERROR(std::string(log))
+    }
+    glGetProgramiv(m_pID, GL_VALIDATE_STATUS, &success);
+    if(!success)
+    {
+        glGetProgramInfoLog(m_pID, 1024, 0, log);
+        ERROR(std::string(log))
+    }
 
-    glDeleteFramebuffers(1, &fbo);
-    glDeleteRenderbuffers(1, &rbo);
-
-    convert.Destroy();
-    envMap.Destroy();
+    glDeleteShader(m_vID);
+    glDeleteShader(m_fID);
 }
 
-void Skybox::Destroy()
+void Shader::Destroy()
 {
-    glDeleteBuffers(1, &m_Vbo);
-    glDeleteVertexArrays(1, &m_Vao);
-    glDeleteTextures(1, &m_TexId);
-    m_Shader.Destroy();
+    glDeleteProgram(m_pID);
 }
 
-void Skybox::Render(Camera& camera)
+void Shader::ReadFile(std::string path)
 {
-    glDepthFunc(GL_LEQUAL);
-    glDepthMask(GL_FALSE);
-    glDisable(GL_CULL_FACE);
+    std::ifstream in(path);
+    if(!in)
+    {
+        std::cerr << "Can't open the shader file!" << std::endl;
+        std::exit(-1);
+    }
+    
+    std::string line = "";
 
-    m_Shader.Bind();
-    m_Shader.PutMat4("proj", camera.GetProjMat());
-    m_Shader.PutMat4("view", camera.GetViewMat());
+    bool v = false, f = false, t = false;
+    while(getline(in, line))
+    {
+        line += "\n";
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, m_TexId);
+        std::string l = Utils::toLowerCase(line);
+        if (l.find("type vert") != std::string::npos) {
+            f = false;
+            v = true;
+            t = true;
+        } else if (l.find("type frag") != std::string::npos) {
+            t = true;
+            f = true;
+            v = false;
+        } else {
+            t = false;
+        }
 
-    glBindVertexArray(m_Vao);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+        if (v && !t) {
+            vSrc += line;
+        }
+        if (f && !t) {
+            fSrc += line;
+        }
 
-    glEnable(GL_CULL_FACE);
-    glDepthMask(GL_TRUE);
-    glDepthFunc(GL_LESS);
+        line = "";
+    }
+
+    in.close();
+}
+
+void Shader::Bind()
+{
+    glUseProgram(m_pID);
+}
+
+void Shader::Unbind()
+{
+    glUseProgram(0);
+}
+
+void Shader::PutTex(std::string name, int texIndex)
+{
+    Bind();
+    glActiveTexture(GL_TEXTURE0 + texIndex);
+    glUniform1i(GetLocation(name), texIndex);
+}
+
+void Shader::PutVec2(std::string name, glm::vec2 data)
+{
+    Bind();
+    glUniform2f(GetLocation(name), data.x, data.y);
+}
+
+void Shader::PutVec3(std::string name, glm::vec3 data)
+{
+    Bind();
+    glUniform3f(GetLocation(name), data.x, data.y, data.z);
+}
+
+void Shader::PutVec4(std::string name, glm::vec4 data)
+{
+    Bind();
+    glUniform4f(GetLocation(name), data.x, data.y, data.z, data.w);
+}
+
+void Shader::PutIVec2(std::string name, glm::ivec2 data)
+{
+    Bind();
+    glUniform2i(GetLocation(name), data.x, data.y);
+}
+
+void Shader::PutIVec3(std::string name, glm::ivec3 data)
+{
+    Bind();
+    glUniform3i(GetLocation(name), data.x, data.y, data.z);
+}
+
+void Shader::PutIVec4(std::string name, glm::ivec4 data)
+{
+    Bind();
+    glUniform4i(GetLocation(name), data.x, data.y, data.z, data.w);
+}
+
+void Shader::PutDVec2(std::string name, glm::dvec2 data)
+{
+    Bind();
+    glUniform2d(GetLocation(name), data.x, data.y);
+}
+
+void Shader::PutDVec3(std::string name, glm::dvec3 data)
+{
+    Bind();
+    glUniform3d(GetLocation(name), data.x, data.y, data.z);
+}
+
+void Shader::PutDVec4(std::string name, glm::dvec4 data)
+{
+    Bind();
+    glUniform4d(GetLocation(name), data.x, data.y, data.z, data.w);
+}
+
+void Shader::PutMat3(std::string name, glm::mat3 data)
+{
+    Bind();
+    glUniformMatrix3fv(GetLocation(name), 1, false, glm::value_ptr(data));
+}
+
+void Shader::PutMat4(std::string name, glm::mat4 data)
+{
+    Bind();
+    glUniformMatrix4fv(GetLocation(name), 1, false, glm::value_ptr(data));
+}
+
+void Shader::PutInt(std::string name, int data)
+{
+    Bind();
+    glUniform1i(GetLocation(name), data);
+}
+
+void Shader::PutFloat(std::string name, float data)
+{
+    Bind();
+    glUniform1f(GetLocation(name), data);    
+}
+
+uint32_t Shader::GetLocation(std::string name) {
+    if(m_Map.count(name) == 0) {
+        m_Map[name] = glGetUniformLocation(m_pID, name.c_str());
+    }
+
+    return m_Map[name];
 }
