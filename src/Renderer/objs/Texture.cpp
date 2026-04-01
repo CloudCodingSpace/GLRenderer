@@ -2,13 +2,14 @@
 
 #include <glad/glad.h>
 
-void Texture::Init(int32_t width, int32_t height, void* pixels, bool isDepth, bool isFloat)
+void Texture::Init(int32_t width, int32_t height, void* pixels, bool isDepth, bool isFloat, bool isColAttachment)
 {
     m_Width = width;
     m_Height = height;
     m_Pixels = pixels;
     m_IsDepth = isDepth;
     m_IsFloat = isFloat;
+    m_IsColAttachment = isColAttachment;
 
     glGenTextures(1, &m_Handle);
     glBindTexture(GL_TEXTURE_2D, m_Handle);
@@ -31,7 +32,8 @@ void Texture::Init(int32_t width, int32_t height, void* pixels, bool isDepth, bo
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
     }
 
-    glGenerateMipmap(GL_TEXTURE_2D);
+    if(!isColAttachment)
+        glGenerateMipmap(GL_TEXTURE_2D);
     
     glBindTexture(GL_TEXTURE_2D, 0);
 }
@@ -58,7 +60,8 @@ void Texture::Resize(int32_t width, int32_t height)
     GLenum type = m_IsDepth ? GL_UNSIGNED_INT_24_8 : (m_IsFloat ? GL_FLOAT : GL_UNSIGNED_BYTE);
 
     glTexImage2D(GL_TEXTURE_2D, 0, format, m_Width, m_Height, 0, pixelFormat, type, m_Pixels);
-    glGenerateMipmap(GL_TEXTURE_2D);
+    if(!m_IsColAttachment)
+        glGenerateMipmap(GL_TEXTURE_2D);
     
     Unbind();
 }
@@ -78,22 +81,6 @@ void Texture::Unbind()
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Texture::GetPixels(unsigned char* pixels)
-{
-    if(!pixels)
-        return;
-
-    Bind();
-
-    GLenum format = m_IsFloat ? GL_RGBA32F : (m_IsDepth ? GL_DEPTH24_STENCIL8 : GL_RGBA);
-    GLenum pixelFormat = m_IsDepth ? GL_DEPTH_STENCIL : GL_RGBA;
-    GLenum type = m_IsDepth ? GL_UNSIGNED_INT_24_8 : (m_IsFloat ? GL_FLOAT : GL_UNSIGNED_BYTE);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, format, m_Width, m_Height, 0, pixelFormat, type, pixels);
-
-    Unbind();
-}
-
 void Texture::SetPixels(unsigned char* pixels)
 {
     if(m_Pixels)
@@ -104,6 +91,8 @@ void Texture::SetPixels(unsigned char* pixels)
     Bind();
     
     glTexImage2D(GL_TEXTURE_2D, 0, (m_IsFloat) ? GL_RGBA32F : ((m_IsDepth) ? GL_DEPTH24_STENCIL8 : GL_RGBA), m_Width, m_Height, 0, GL_RGBA, (m_IsFloat) ? GL_FLOAT : ((m_IsDepth) ? GL_DEPTH_STENCIL : GL_UNSIGNED_BYTE), m_Pixels);
+    if (!m_IsColAttachment)
+        glGenerateMipmap(GL_TEXTURE_2D);
 
     Unbind();
 }
