@@ -36,8 +36,9 @@ void GuiHelper::StartFrame()
 
     if(ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_DockingEnable)
     {
-        // ImGui::DockSpaceOverViewport(ImGui::GetID("DockingID"), ImGui::GetMainViewport());
+        ImGui::DockSpaceOverViewport(ImGui::GetID("DockingID"), ImGui::GetMainViewport());
 
+        /*
         const ImGuiViewport* viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(viewport->WorkPos);
         ImGui::SetNextWindowSize(viewport->WorkSize);
@@ -50,6 +51,7 @@ void GuiHelper::StartFrame()
         
         ImGui::DockSpace(ImGui::GetID("Dockspace"), ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
         ImGui::SetNextWindowDockID(ImGui::GetID("Dockspace"));
+        */    
     }
 }
 
